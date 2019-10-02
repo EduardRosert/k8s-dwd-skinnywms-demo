@@ -1,0 +1,27 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: skinnywms-demo-with-dwd-data
+spec:
+  # Volumes are declared by the pod. They share its lifecycle
+  # and are communal across containers.
+  volumes:
+    # Volumes have a name and configuration based on the type of volume.
+    # In this example, we use the emptyDir volume type
+    - name: dwd-grib-data
+      persistentVolumeClaim:
+        claimName: dwd-grib-data-claim
+
+  # Now, one of our containers can mount this volume and use it like
+  # any other directory.
+  containers:
+    # skinnywms server
+    - name: skinnywms
+      volumeMounts:
+        - name: dwd-grib-data # This is the name of the volume we set at the pod level
+          mountPath: /dwd-grib-data # Where to mount this directory in our container
+      image: eduardrosert/skinnywms
+      # Now that we have a directory mounted at /var/simple, let's 
+      # make sure that the demo starts with the correct path
+      command: ["python", "/demo.py", "--host='0.0.0.0", "--port=5000", "--path=/dwd-grib-data"]
+
