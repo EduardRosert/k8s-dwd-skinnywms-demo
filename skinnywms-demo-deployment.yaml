@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: skinnywms-demo
+  name: skinnywms-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: skinnywms-demo
+  template:
+    metadata:
+      labels:
+        app: skinnywms-demo
+    spec:
+      containers:
+      - image: eduardrosert/skinnywms
+        imagePullPolicy: Always
+        name: skinnywms
+        resources: {}
