@@ -3,9 +3,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: k8s-dwd-skinnywms-demo-claim
 spec:
-  storageClassName: manual
+  storageClassName: rook-nfs
   accessModes:
     - ReadWriteMany
   resources:
     requests:
-      storage: 500M
+      storage: 100Mi

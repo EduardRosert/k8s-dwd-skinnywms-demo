@@ -1,0 +1,34 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: k8s-download-and-redeploy
+spec:
+  schedule: "*/2 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: k8s-download-and-redeploy
+            image: eduardrosert/k8s-download-and-redeploy:20247d76eec7b3ed54c26e2c73e761e4d8ea024f
+            env:
+            - name: MODEL_NAME
+              value: "icon-eu"
+            - name: MODEL_FIELDS
+              value: "t_2m tmax_2m clch"
+            - name: MAX_TIME_STEP
+              value: "6"
+            - name: DOWNLOAD_BASE_PATH
+              value: "/dwd-data/"
+            - name: TARGET_NAMESPACE
+              value: "wms-eduard"
+            - name: LABEL_SELECTOR
+              value: "app=skinnywms-demo"
+            volumeMounts:
+            - name: dwd-data
+              mountPath: /dwd-data/
+          volumes:
+          - name: dwd-data
+            persistentVolumeClaim:
+              claimName: k8s-dwd-skinnywms-demo-claim
+          restartPolicy: OnFailure

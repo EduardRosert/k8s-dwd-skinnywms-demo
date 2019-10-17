@@ -1,11 +1,11 @@
-apiVersion: apps/v1
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
     app: skinnywms-demo
   name: skinnywms-demo
 spec:
-  replicas: 2
+  replicas: 4
   selector:
     matchLabels:
       app: skinnywms-demo
@@ -15,7 +15,17 @@ spec:
         app: skinnywms-demo
     spec:
       containers:
-      - image: eduardrosert/skinnywms
-        imagePullPolicy: Always
-        name: skinnywms
-        resources: {}
+      - name: skinnywms-demo
+        image: eduardrosert/skinnywms
+        ports:
+        - name: http
+          containerPort: 5000
+        command: ["/bin/sh", "-c"]
+        args: [ "latest=$(cat /dwd-data/latest.txt) && python /demo.py --host='0.0.0.0' --port=5000 --path=/dwd-data/$latest"]
+        volumeMounts:
+        - name: dwd-data
+          mountPath: /dwd-data/
+      volumes:
+      - name: dwd-data
+        persistentVolumeClaim:
+          claimName: k8s-dwd-skinnywms-demo-claim
