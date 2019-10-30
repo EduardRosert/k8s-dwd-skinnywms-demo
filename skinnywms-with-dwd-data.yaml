@@ -1,0 +1,60 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: skinnywms-demo
+  name: skinnywms-demo
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: skinnywms-demo
+  template:
+    metadata:
+      labels:
+        app: skinnywms-demo
+    spec:
+      containers:
+      - name: skinnywms-demo
+        image: eduardrosert/skinnywms
+        ports:
+        - name: http
+          containerPort: 5000
+        command: ["/bin/sh", "-c"]
+        args: [ "latest=$(cat /dwd-data/latest.txt) && python /demo.py --host='0.0.0.0' --port=5000 --path=/dwd-data/$latest"]
+        volumeMounts:
+        - name: dwd-data
+          mountPath: /dwd-data/
+      initContainers:
+      - name: dwd-open-data-downloader
+        image: eduardrosert/dwd-open-data-downloader
+        env:
+        - name: MODEL_NAME
+          value: "icon-eu"
+        - name: MODEL_FIELDS
+          value: "t_2m tmax_2m clch"
+        - name: MAX_TIME_STEP
+          value: "6"
+        command: ["/bin/sh", "-c"]
+        args: [ "python opendata-downloader.py --model $MODEL_NAME --get-latest-timestamp>/dwd-data/latest.txt && latest=$(cat /dwd-data/latest.txt) && mkdir -p /dwd-data/$latest && python opendata-downloader.py --model $MODEL_NAME --single-level-fields $MODEL_FIELDS --max-time-step $MAX_TIME_STEP --directory /dwd-data/$latest -v"]
+        volumeMounts:
+        - name: dwd-data
+          mountPath: /dwd-data/
+      volumes:
+      - name: dwd-data
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: skinnywms-demo
+  name: skinnywms-demo
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: skinnywms-demo
+  type: LoadBalancer
