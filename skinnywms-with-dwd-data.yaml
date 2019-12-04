@@ -1,4 +1,5 @@
 apiVersion: extensions/v1beta1
+#apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -21,7 +22,7 @@ spec:
         - name: http
           containerPort: 5000
         command: ["/bin/sh", "-c"]
-        args: [ "latest=$(cat /dwd-data/latest.txt) && python /demo.py --host='0.0.0.0' --port=5000 --path=/dwd-data/$latest"]
+        args: [ "latest=$(cat /dwd-data/latest.txt) && python /app/skinnywms/demo.py --host='0.0.0.0' --port=5000 --path=/dwd-data/$latest"]
         volumeMounts:
         - name: dwd-data
           mountPath: /dwd-data/
@@ -57,4 +58,5 @@ spec:
     targetPort: 5000
   selector:
     app: skinnywms-demo
-  type: LoadBalancer
+#  type: LoadBalancer
+  type: NodePort
